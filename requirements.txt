@@ -1,3 +1,11 @@
+# discord
 discord
 python-dotenv
 google-api-python-client
+# data
+emoji
+langid
+jieba
+beautifulsoup4
+opencc-python-reimplemented
+pandas
