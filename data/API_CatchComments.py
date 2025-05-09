@@ -5,12 +5,33 @@ from dotenv import load_dotenv
 import os
 import pandas as pd
 import socket
-import sys
 from pathlib import Path
+import re
+from urllib.parse import urlparse, parse_qs
+
+def extract_video_id(url: str) -> str:
+    parsed_url = urlparse(url)
+
+    # 處理 youtu.be 短網址
+    if parsed_url.netloc == "youtu.be":
+        return parsed_url.path.strip("/")
+
+    # 處理 youtube.com/watch?v=xxxx
+    if parsed_url.path == "/watch":
+        query = parse_qs(parsed_url.query)
+        return query.get("v", [None])[0]
+
+    # 處理其他可能格式（如嵌入）
+    match = re.search(r"(?:v=|\/embed\/|\/v\/|youtu\.be\/)([a-zA-Z0-9_-]{11})", url)
+    if match:
+        return match.group(1)
+
+    return None
 
 load_dotenv(verbose=True)
 API_KEY     = os.getenv("API_KEY") # 你的 API 金鑰
-VIDEO_ID    = "" # 換成實際的影片 ID
+VIDEO       = input()       # 換成實際的影片 ID
+VIDEO_ID    = extract_video_id(VIDEO) # 影片 ID
 MAX_RESULTS = 100           # 一頁最多取 100 筆
 PAGE_LIMIT  = 5             # 最多拉 5 頁就停（視需求調整）
 
@@ -69,7 +90,8 @@ while True:
         break
 
 # 輸出 CSV
-out_dir = Path('APItoCSV')
 df = pd.DataFrame(comments)
-df.to_csv( out_dir/"youtube_comments.csv", index=False, encoding="utf-8-sig")
+out_dir = Path("./data/datasets")
+out_dir.mkdir(parents=True, exist_ok=True)
+df.to_csv(out_dir/"youtube_comments.csv", index=False, encoding="utf-8-sig")
 print(f"已匯出 {len(df)} 筆留言到 youtube_comments.csv")

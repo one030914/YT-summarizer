@@ -8,7 +8,6 @@ from opencc import OpenCC
 import unicodedata
 import pandas as pd
 from pathlib import Path
-import re
 from itertools import groupby
 
 # 設定只辨識中文和英文，避免過度分類
@@ -237,7 +236,9 @@ def batch_preprocess_comments(json_data):
 
 if __name__ == "__main__":
     # 1. 從 CSV 讀取原始留言欄位
-    in_path = Path('APItoCSV') / 'youtube_comments.csv'
+    dir = Path("./data/datasets")
+    dir.mkdir(parents=True, exist_ok=True)
+    in_path = dir / 'youtube_comments.csv'
     df_in = pd.read_csv(in_path, encoding='utf-8-sig')
     if 'text' in df_in.columns and 'commentText' not in df_in.columns:
         df_in = df_in.rename(columns={'text': 'commentText'})
@@ -249,8 +250,6 @@ if __name__ == "__main__":
     print("🟢 預處理完成，結果前幾筆：")
     print(df_out.head())
 
-    out_dir = Path('Preprocess')
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / 'cleaned_comments.csv'
+    out_path = dir / 'cleaned_comments.csv'
     df_out.to_csv(out_path, index=False, encoding='utf-8-sig')
     print(f"✅ 輸出到：{out_path}")
