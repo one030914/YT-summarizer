@@ -1,15 +1,18 @@
 import httplib2
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from dotenv import load_dotenv
+import os
 import pandas as pd
 import socket
 import sys
 from pathlib import Path
 
-API_KEY     =      # 你的 API 金鑰
-VIDEO_ID    =       # 換成實際的影片 ID
-MAX_RESULTS = 100                # 一頁最多取 100 筆
-PAGE_LIMIT  = 5                  # 最多拉 5 頁就停（視需求調整）
+load_dotenv(verbose=True)
+API_KEY     = os.getenv("API_KEY") # 你的 API 金鑰
+VIDEO_ID    = "" # 換成實際的影片 ID
+MAX_RESULTS = 100           # 一頁最多取 100 筆
+PAGE_LIMIT  = 5             # 最多拉 5 頁就停（視需求調整）
 
 # 1. 建立帶逾時設定的 HTTP 物件
 http = httplib2.Http(timeout=10)  # 10 秒逾時
