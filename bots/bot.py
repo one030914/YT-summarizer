@@ -4,7 +4,7 @@ import os
 import json
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(verbose=True)
 with open('data.json', 'r', encoding='utf8') as jfile:
     jdata = json.load(jfile)
 
