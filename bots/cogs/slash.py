@@ -1,6 +1,7 @@
 import discord
 from discord import app_commands
 from discord.ui import View, Button
+from datetime import datetime
 from core.classes import Cog_Extension
 from process.get import get_title
 
@@ -29,9 +30,32 @@ class Slash(Cog_Extension):
             await interaction.response.send_message(embed=embed)
             return
         embed = discord.Embed(
-            title=title,
-            description=f'{title}\'s comments are summarized.',
-            color=discord.Color.blue()
+            title=f'🎥 影片標題：{title}',
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        embed.add_field(
+            name="**📌 摘要：**",
+            value=(
+                "1. [summary 1]\n"
+                "2. [summary 2]\n"
+                "3. [summary 3]"
+            ),
+            inline=False
+        )
+        embed.add_field(
+            name="**🔑 關鍵詞：**",
+            value="[keyword 1]、[keyword 2]、[keyword 3]",
+            inline=False
+        )
+        embed.add_field(
+            name="**🌐 語言佔比：**",
+            value=(
+                "🥇 中文 XX%\n"
+                "🥈 英文 YY%\n"
+                "🥉 其他語言 ZZ%"
+            ),
+            inline=False
         )
         view = View()
         view.add_item(Button(label='👉點我看影片!', url=video_url, style=discord.ButtonStyle.link))
