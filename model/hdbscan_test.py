@@ -1,7 +1,7 @@
 from sentence_transformers import SentenceTransformer
 import hdbscan
 from sklearn.metrics import silhouette_score
-from sentence_transformers import SentenceTransformer
+
 
 # 初始化語意模型
 model = SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')
