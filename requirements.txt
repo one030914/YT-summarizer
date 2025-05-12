@@ -9,6 +9,7 @@ jieba
 beautifulsoup4
 opencc-python-reimplemented
 pandas
+# model
 KeyBERT
 hdbscan
 SentenceTransformer
