@@ -93,5 +93,5 @@ while True:
 df = pd.DataFrame(comments)
 out_dir = Path("./data/datasets")
 out_dir.mkdir(parents=True, exist_ok=True)
-df.to_csv(out_dir/"youtube_comments.csv", index=False, encoding="utf-8-sig")
-print(f"已匯出 {len(df)} 筆留言到 youtube_comments.csv")
+df.to_csv(out_dir/ f"{VIDEO_ID}.csv", index=False, encoding="utf-8-sig")
+print(f"已匯出 {len(df)} 筆留言到 {VIDEO_ID}.csv")
