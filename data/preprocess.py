@@ -8,7 +8,6 @@ import jieba.posseg
 import pandas as pd
 from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 import warnings
-from pathlib import Path
 from opencc import OpenCC
 import contractions
 
@@ -126,8 +125,8 @@ def batch_preprocess_comments(json_data):
         rawcomments = entry['原留言']
         if not isinstance(rawcomments, str):
             continue
-        rawlikecount = str(entry['按讚數'])
-        rawreplycount = str(entry['回覆數'])
+        # rawlikecount = str(entry['按讚數'])
+        # rawreplycount = str(entry['回覆數'])
         proc = preprocess_comment(rawcomments)
         if proc['language'] in ['zh', 'en', 'unknown']:
             comments.append({

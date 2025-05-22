@@ -6,17 +6,16 @@ import socket
 from pathlib import Path
 import re
 from urllib.parse import urlparse, parse_qs
+import os
+from dotenv import load_dotenv
 
 class API:
     def __init__(self):
-        self.API_KEY     = "AIzaSyCJh4fHX2GS3dQaWpW6hqIdPH9Wk6Y9XvI"     # 你的 API 金鑰
-        self.MAX_RESULTS = 100                                           # 一頁最多取 100 筆
-        self.PAGE_LIMIT  = 5                                             # 最多拉 5 頁就停（視需求調整）
-        self.MIN_LIKES = 100                                             # 按讚數最少標準
+        load_dotenv(verbose=True)
+        self.API_KEY = os.getenv('API_KEY')     # 你的 API 金鑰
 
-    def get_comments(self, video_url) -> list:
-
-        VIDEO_ID = self.extract_video_id(video_url)                  # 換成實際的影片 ID
+    def get_comments(self, url: str, max_comments: int, pages: int, min_likes: int) -> list:
+        VIDEO_ID = self.extract_video_id(url) # 換成實際的影片 ID
         # 1. 建立帶逾時設定的 HTTP 物件
         http = httplib2.Http(timeout=10)  # 10 秒逾時
         # 2. 把 http 傳給 build，API 呼叫就會有逾時機制
@@ -28,8 +27,8 @@ class API:
 
         while True:
             page_count += 1
-            if page_count > self.PAGE_LIMIT:
-                print(f"已達頁數上限 {self.PAGE_LIMIT}，提前結束")
+            if page_count > pages:
+                print(f"已達頁數上限 {pages}，提前結束")
                 break
 
             try:
@@ -38,7 +37,7 @@ class API:
                         .list(
                             part="snippet",
                             videoId=VIDEO_ID,
-                            maxResults=self.MAX_RESULTS,
+                            maxResults=max_comments,
                             order="relevance",
                             pageToken=next_page_token,
                             textFormat="plainText"
@@ -57,21 +56,21 @@ class API:
 
             for item in response["items"]:
                 top = item["snippet"]["topLevelComment"]
-                s   = top["snippet"]
-                text = s["textDisplay"]
+                s = top["snippet"]
                 likes = s.get("likeCount", 0)
                 
-                if likes > self.MIN_LIKES:
+                if likes > min_likes:
                     comments.append({
-                        "原留言":        s["textDisplay"],
-                        "按讚數":   s.get("likeCount", 0),
-                        "回覆數":  item["snippet"].get("totalReplyCount", 0)
+                        "原留言": s["textDisplay"],
+                        "按讚數": s.get("likeCount", 0),
+                        "回覆數": item["snippet"].get("totalReplyCount", 0)
                     })
 
             next_page_token = response.get("nextPageToken")
             if not next_page_token:
                 break
         return comments
+    
     def extract_video_id(self, url: str) -> str:
         parsed_url = urlparse(url)
 
