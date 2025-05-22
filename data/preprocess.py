@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup, MarkupResemblesLocatorWarning
 import warnings
 from pathlib import Path
 from opencc import OpenCC
-from APIComments import VIDEO_ID
 import contractions
 
 # 初始化轉換器
@@ -124,33 +123,41 @@ def batch_preprocess_comments(json_data):
     """批次處理留言"""
     comments = []
     for entry in json_data:
-        raw = entry.get('commentText', '')
-        if not isinstance(raw, str):
+        rawcomments = entry['原留言']
+        if not isinstance(rawcomments, str):
             continue
-        proc = preprocess_comment(raw)
+        rawlikecount = str(entry['按讚數'])
+        rawreplycount = str(entry['回覆數'])
+        proc = preprocess_comment(rawcomments)
         if proc['language'] in ['zh', 'en', 'unknown']:
             comments.append({
-                "原始留言": raw,
+                # "語言": proc['language'],
+                # "原留言": rawcomments,
+                # "按讚數": rawlikecount,
+                # "回覆數": rawreplycount,
                 "清理後留言": proc['text'],
-                "語言": proc['language'],
                 "結巴斷詞": ",".join(f"'{w}'" for w in proc.get("tokens", []))
             })
     
     return pd.DataFrame(comments).drop_duplicates(subset=['清理後留言'])
 
+'''
 if __name__ == "__main__":
-    in_path = Path('Youtube_Comments') / f'{VIDEO_ID}.csv'
+    in_path = out_dir / f'{VIDEO_ID}.csv'
     df_in = pd.read_csv(in_path, encoding='utf-8-sig')
-    if 'text' in df_in.columns and 'commentText' not in df_in.columns:
-        df_in = df_in.rename(columns={'text': 'commentText'})
+    if '原留言' in df_in.columns and 'commentText' not in df_in.columns:
+        df_in = df_in.rename(columns={'原留言': 'commentText'})
+    if '按讚數' in df_in.columns and 'likecount' not in df_in.columns:
+        df_in = df_in.rename(columns={'按讚數': 'likecount'})
+    if '回覆數' in df_in.columns and 'replycount' not in df_in.columns:
+        df_in = df_in.rename(columns={'回覆數': 'replycount'})
     
     print("🔵 開始批次預處理留言...")
-    df_out = batch_preprocess_comments(df_in[['commentText']].fillna('').to_dict(orient='records'))
+    df_out = batch_preprocess_comments(df_in[['commentText','likecount','replycount']].fillna('').to_dict(orient='records'))
     print("🟢 預處理完成，結果前幾筆：")
     print(df_out.head())
     
-    out_dir = Path('Cleaned_Comments')
-    out_dir.mkdir(parents=True, exist_ok=True)
-    out_path = out_dir / f'{VIDEO_ID}.csv'
+    out_path = out_dir / f'{VIDEO_D}.csv'
     df_out.to_csv(out_path, index=False, encoding='utf-8-sig')
     print(f"✅ 輸出到：{out_path}")
+'''
