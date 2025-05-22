@@ -26,8 +26,6 @@ PATTERNS = {
     'time': re.compile(r'\b\d{1,2}:\d{2}(?::\d{2})?\b'),
     'ellipsis': re.compile(r'(?:…|\.{3,6})'),
     'dup_punc': re.compile(r'([^\w\s])\1+'),
-    'kana': re.compile(r'[ぁ-んァ-ン]'),
-    'leading_punc': re.compile(r'^[\!\?\.\,\;\:\…]+'),
     'repeated': re.compile(r'(?P<grp>.+?)\1+')
 }
 
@@ -81,21 +79,19 @@ class TextNormalizer:
         # 分詞處理
         words = []
         for w, flag in jieba.posseg.lcut(text):
+            new = PATTERNS['repeated'].sub(r'\g<grp>', w)
+            if new == text:
+                break
+            w = new
+            
             if (flag.startswith(('n','v','a')) or flag in ('i','l')) and w not in STOPWORDS:
                 words.append(w)
         
-        # 合併並清理
-        text = ''.join(words)
-        text = PATTERNS['leading_punc'].sub('', text)
-        
         # 處理重複片段
-        while True:
-            new = PATTERNS['repeated'].sub(r'\g<grp>', text)
-            if new == text:
-                break
-            text = new
+        words = list(dict.fromkeys(words))
+        text = ''.join(words)
             
-        return text
+        return text, words
     
     def normalize_english(self, text):
         """英文正規化"""
@@ -106,19 +102,16 @@ class TextNormalizer:
 def preprocess_comment(raw_comment):
     """單則留言預處理"""
     cleaned = clean_text(raw_comment)
-    if not cleaned or PATTERNS['kana'].search(cleaned):
-        return {"text": cleaned, "language": "unknown"}
     
     lang = langid.classify(cleaned)[0]
     normalizer = TextNormalizer()
     tokens = []
     
     if lang == 'zh':
-        cleaned = normalizer.normalize_chinese(cleaned)
-        cleaned = normalizer.normalize_english(cleaned)
-        tokens = [w for w in jieba.lcut(cleaned) if re.match(r'[\w\u4E00-\u9FFF0-9]', w) and w.strip()]
+        cleaned, tokens = normalizer.normalize_chinese(cleaned)
         tokens = [ccs2t.convert(w) for w in tokens]
         tokens = [CUSTOM_FIXES.get(w, w) for w in tokens]
+        cleaned = ccs2t.convert(cleaned)
     elif lang == 'en':
         cleaned = normalizer.normalize_english(cleaned)
         tokens = []
