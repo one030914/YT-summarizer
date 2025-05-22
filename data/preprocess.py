@@ -13,11 +13,6 @@ from pathlib import Path
 from opencc import OpenCC
 from APIComments import VIDEO_ID
 import contractions
-from keybert import KeyBERT
-
-# ===== u英文語義向量模型 =====
-# 以 all-MiniLM-L6-v2 這個 Sentence-Transformer 模型為基底
-kw_model = KeyBERT("all-MiniLM-L6-v2")
 
 # OpenCC語言轉換
 cct2s = OpenCC('t2s')
@@ -89,8 +84,8 @@ Jieba_Protected = [
 
 # ===== 結巴濾除字庫補充 =====
 stopwords = {"是","的","了","有","没","在","也","都","为","能","不","好","像","咧","袂","著","希望","人","听","歌","会","吃","要","看","爱","让","拍","到","说","没有","有","讲","大","小","首歌","不到"}
-# ===== 全形半形補充表 =====
 
+# ===== 全形半形補充表 =====
 FULL2HALF_CUSTOM = str.maketrans({
 	'’': "'",'‘': "'"
 })
@@ -134,14 +129,6 @@ def remove_repeated_punct(text: str) -> str:
 		text = text.replace(placeholder, '...')  # 或用 '…' 視你想用哪種
 	return text
 
-def japanese_ratio(text: str) -> float:
-	# 回傳文字中日文（平假名+片假名）字元佔全部非空白字元的比例
-	chars = [c for c in text if not c.isspace()]
-	if not chars:
-		return 0.0
-	jp_count = sum(1 for c in chars if KANA_RE.match(c))
-	return jp_count / len(chars)
-
 def to_chinese_datetime(match: re.Match) -> str:
 	# 把 match.group(1–5) 轉成「M月D日上午H點xx分」格式
 	month, day, meridiem, hour, minute = match.groups()
@@ -163,20 +150,6 @@ def clean_text(text):
 
 # ===== 中文正規化 =====
 class ChineseNormalizer:
-	def remove_chinese_particles(self, text: str) -> str:
-		filtered = []
-		# 確保保護詞已加入詞典（可放在 module 初始化時做一次）
-		for w in Jieba_Protected:
-			jieba.add_word(w)
-
-		# 分詞＋詞性標注
-		for w, flag in jieba.posseg.lcut(text):
-			# 只保留 n*、v*、a*、i、l、eng
-			if flag.startswith(('n','v','a')) or flag in ('i','l','eng'):
-				if w not in stopwords and w.strip():
-					filtered.append(w)
-
-		return ''.join(filtered)
 	
 	def tc2sc(self, text: str) -> str:
 		# 中文正規化：繁轉簡
@@ -188,10 +161,7 @@ class ChineseNormalizer:
 		return LEADING_PUNC_RE.sub('', text)
 
 	def collapse_repeated_segments(self, text: str) -> str:
-		"""
-		將任意連續重複出現兩次以上的子串，只保留一次。
-		例如 "很棒很棒很棒！" → "很棒！"
-		"""
+		#將任意連續重複出現兩次以上的子串，只保留一次。
 		# (?P<grp>.+?) 以非貪婪方式匹配最短子串
 		# \1+          後面跟著一個以上完全相同的重複
 		pattern = re.compile(r'(?P<grp>.+?)\1+')
@@ -206,7 +176,6 @@ class ChineseNormalizer:
 	def normalize(self, text: str) -> str:
 		t = text if isinstance(text, str) else ''
 		t = self.tc2sc(t)
-		t = self.remove_chinese_particles(t)
 		t = self.remove_leading_punct(t)
 		t = self.collapse_repeated_segments(t)
 		return t
@@ -214,14 +183,13 @@ class ChineseNormalizer:
 # ===== 英文正規化 =====
 class EnglishNormalizer:
 	def expand_english_contractions(self, text: str) -> str:
-		"""使用 contractions 套件將英文縮寫（如 "don't", "I'm"）正確展開成完整形式。例如 "Don't stop me now!" -> "Do not stop me now!"""
+		# 使用 contractions 套件將英文縮寫正確展開
 		if not isinstance(text, str):
 			return ""
-		# contractions.fix 會自動找出所有縮寫並展開
 		return contractions.fix(text)
 	
 	def normalize_english(self, text: str) -> str:
-		"""英文正規化：小寫化、展開縮寫"""
+		# 英文正規化：小寫化、展開縮寫
 		text = text.lower()
 		return text
 	
@@ -236,41 +204,48 @@ class EnglishNormalizer:
 		t = self.expand_english_contractions(t)
 		return t
 
-# ===== 單則預處理 =====
+# ===== 結巴斷詞 =====
+def Jieba_Keywords(text: str) -> list:
+		filtered = []
+		# 確保保護詞已加入詞典（可放在 module 初始化時做一次）
+		for w in Jieba_Protected:
+			jieba.add_word(w)
 
+		# 分詞＋詞性標注
+		for w, flag in jieba.posseg.lcut(text):
+			# 只保留 n*、v*、a*、i、l
+			if flag.startswith(('n','v','a')) or flag in ('i','l'):
+				if w not in stopwords and w.strip():
+					filtered.append(w)
+
+		return filtered
+
+# ===== 單則預處理 =====
 def preprocess_comment(raw_comment):
-	"""單則留言完整預處理，不回傳 confidence"""
 	# 確保為字串
 	raw_comment = raw_comment if isinstance(raw_comment, str) else ''
 	cleaned = clean_text(raw_comment)
 	if cleaned == '':
 		return {"text": "", "language": "unknown"}
-	if japanese_ratio(cleaned) > 0.85:
-		return {"text": cleaned, "language": "unknown"}
 	
 	lang = langid.classify(cleaned)[0]
 	tokens = []
 
 	if lang == 'zh':
-		cleaned = ChineseNormalizer().normalize(cleaned)
-		cleaned = EnglishNormalizer().normalize(cleaned)
-		tokens = jieba.lcut(cleaned)
-		tokens = [w for w in tokens if re.match(r'[\w\u4E00-\u9FFF0-9]', w) and w.strip()]
+		tokens = ChineseNormalizer().normalize(cleaned)
+		tokens = Jieba_Keywords(cleaned)
 		tokens = [ccs2t.convert(w) for w in tokens]
 		tokens = [cc_convert_with_fixes(w) for w in tokens]
-
+		cleaned = ''.join(tokens)
 	elif lang == 'en':
 		cleaned = EnglishNormalizer().normalize(cleaned)
-		tokens = kw_model.extract_keywords(cleaned, keyphrase_ngram_range=(1, 1), stop_words='english', top_n=5)
-		tokens = [kw for kw, _ in tokens]
-
+		tokens = []
 	else:
 		lang = 'unknown'
 
 	return {"text": cleaned, "language": lang ,"tokens": tokens}
 
 # ===== 批次處理 =====
-
 def batch_preprocess_comments(json_data):
 	"""保留中英文，移除重複"""
 	comments = []
@@ -286,7 +261,6 @@ def batch_preprocess_comments(json_data):
 				"語言":      proc['language'],
 				"結巴斷詞": ",".join(f"'{w}'" for w in (proc.get("tokens", [])))
 			})
-		
 	df = pd.DataFrame(comments).drop_duplicates(subset=['清理後留言'])
 	return df
 
@@ -294,7 +268,7 @@ def batch_preprocess_comments(json_data):
 
 if __name__ == "__main__":
 	# 1. 從 CSV 讀取原始留言欄位
-	in_path = Path("./data/datasets") / f'{VIDEO_ID}.csv'
+	in_path = Path('Youtube_Comments') / f'{VIDEO_ID}.csv'
 	df_in = pd.read_csv(in_path, encoding='utf-8-sig')
 	if 'text' in df_in.columns and 'commentText' not in df_in.columns:
 		df_in = df_in.rename(columns={'text': 'commentText'})
@@ -306,7 +280,7 @@ if __name__ == "__main__":
 	print("🟢 預處理完成，結果前幾筆：")
 	print(df_out.head())
 	
-	out_dir = Path('./data/datasets/cleanedComments')
+	out_dir = Path('Cleaned_Comments')
 	out_dir.mkdir(parents=True, exist_ok=True)
 	out_path = out_dir / f'{VIDEO_ID}.csv'
 	df_out.to_csv(out_path, index=False, encoding='utf-8-sig')
