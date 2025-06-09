@@ -38,7 +38,7 @@ class API:
                             part="snippet",
                             videoId=VIDEO_ID,
                             maxResults=max_comments,
-                            order="relevance",
+                            order="time",
                             pageToken=next_page_token,
                             textFormat="plainText"
                         )
@@ -59,7 +59,7 @@ class API:
                 s = top["snippet"]
                 likes = s.get("likeCount", 0)
                 
-                if likes > min_likes:
+                if likes >= min_likes:
                     comments.append({
                         "原留言": s["textDisplay"],
                         "按讚數": s.get("likeCount", 0),

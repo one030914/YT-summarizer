@@ -1,5 +1,5 @@
 # discord
-discord
+discord.py
 python-dotenv
 google-api-python-client
 # data
@@ -10,6 +10,14 @@ beautifulsoup4
 opencc-python-reimplemented
 pandas
 # model
-KeyBERT
-hdbscan
+# KeyBERT
+# hdbscan
+datasets
+--index-url https://pypi.org/simple
+--extra-index-url https://download.pytorch.org/whl/cu128
+torch
+torchvision
+torchaudio
+transformers[torch]
+# -f https://download.pytorch.org/whl/cu128
 sentence-transformers

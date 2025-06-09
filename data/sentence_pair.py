@@ -22,7 +22,7 @@ def encode_mini(text):
     return mini_model.encode(text.strip(), convert_to_tensor=True)
 
 # 載入留言資料
-df = pd.read_csv("c:\\Users\\USER\\Desktop\\python專題\\data\\datasets\\vaGf8fmtBr4.csv")
+df = pd.read_csv("./data/datasets/datasets/English.csv")
 comments = df["清理後留言"].dropna().astype(str).tolist()
 comments = [c for c in comments if len(c) >= 2]
 
@@ -49,13 +49,11 @@ for s1, s2 in tqdm(combinations(comments, 2), desc="🔍 雙模型相似度計�
         examples.append({
             "sentence1": s1,
             "sentence2": s2,
-            #"text2vec_score": round(score1, 4),
-            #"mini_score": round(score2, 4),
             "avg_score": avg_score
         })
 
 # 輸出
 df_out = pd.DataFrame(examples)
-output_path = "C:/Users/USER/Desktop/sentence_pair_dual_model.csv"
+output_path = "./data/datasets/datasets/MiniLM_english.csv"
 df_out.to_csv(output_path, index=False, encoding="utf-8-sig")
 print(f"✅ 已儲出 {len(df_out)} 筆雙模型句子對至：{output_path}")
