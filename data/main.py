@@ -1,5 +1,5 @@
 from APIComments import API
-from Preprocess import batch_preprocess_comments
+from preprocess import batch_preprocess_comments
 from pathlib import Path
 import os
 

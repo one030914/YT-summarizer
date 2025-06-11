@@ -121,6 +121,7 @@ def preprocess_comment(raw_comment):
 def batch_preprocess_comments(json_data):
     """批次處理留言"""
     comments = []
+    langs = {'zh': 0, 'en': 0, 'unknown': 0}
     for entry in json_data:
         rawcomments = entry['原留言']
         if not isinstance(rawcomments, str):
@@ -128,15 +129,21 @@ def batch_preprocess_comments(json_data):
         # rawlikecount = str(entry['按讚數'])
         # rawreplycount = str(entry['回覆數'])
         proc = preprocess_comment(rawcomments)
-        if proc['language'] in ['zh', 'en', 'unknown']:
-            comments.append({
-                # "語言": proc['language'],
-                # "原留言": rawcomments,
-                # "按讚數": rawlikecount,
-                # "回覆數": rawreplycount,
-                "清理後留言": proc['text'],
-                # "結巴斷詞": ",".join(f"'{w}'" for w in proc.get("tokens", []))
-            })
+        comments.append({
+            # "語言": proc['language'],
+            # "原留言": rawcomments,
+            # "按讚數": rawlikecount,
+            # "回覆數": rawreplycount,
+            "清理後留言": proc['text'],
+            # "結巴斷詞": ",".join(f"'{w}'" for w in proc.get("tokens", []))
+        })
+        langs[proc['language']] += 1
+        
+    
+    n = sum(langs.values())
+    if n > 0:
+        langs = {k: f"{v/n:.2%}" if v else f"{k}: 0.00%" for k, v in langs.items()}
+        print(f"語言統計：{langs}")
     
     return pd.DataFrame(comments).drop_duplicates(subset=['清理後留言'])
 

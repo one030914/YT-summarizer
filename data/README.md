@@ -2,10 +2,10 @@
 
 ### Datasets
 We will have four datasets:
-- [ ] BERTSUM chinese datasets
-- [ ] BERTSUM english datasets
-- [ ] MiniLM chinese datasets
-- [ ] MiniLM english datasets
+- [X] BERTSUM chinese datasets
+- [X] BERTSUM english datasets
+- [X] MiniLM chinese datasets
+- [X] MiniLM english datasets
 
 for fine-tuning in different models. All datasets have around 900 comments.
 

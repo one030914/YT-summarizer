@@ -1,0 +1,41 @@
+import hdbscan
+from keybert import KeyBERT
+from sentence_transformers import SentenceTransformer
+import numpy as np
+
+# 載入 fine-tuned MiniLM 模型（請確認路徑正確）
+model = SentenceTransformer("./minilm_chinese_finetuned")
+kw_model = KeyBERT(model)
+
+def cluster_and_extract_keywords(comments, top_n=5, min_cluster_size=2):
+    """
+    傳入留言列表，輸出每個群組的關鍵字摘要
+    Args:
+        comments (List[str]): 一組留言（同影片）
+        top_n (int): 每群關鍵字數
+        min_cluster_size (int): HDBSCAN 最小群組大小
+
+    Returns:
+        Dict[int, List[str]]: 群組編號對應的關鍵字清單
+    """
+    if len(comments) < min_cluster_size:
+        return {}
+
+    # 向量化
+    embeddings = model.encode(comments)
+
+    # 分群
+    clusterer = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size, metric='euclidean')
+    labels = clusterer.fit_predict(embeddings)
+
+    # 聚群留言 + 抓關鍵字
+    cluster_keywords = {}
+    for cluster_id in set(labels):
+        if cluster_id == -1:
+            continue  # 忽略雜訊
+        cluster_comments = [c for c, l in zip(comments, labels) if l == cluster_id]
+        joined_text = "。".join(cluster_comments)
+        keywords = kw_model.extract_keywords(joined_text, top_n=top_n)
+        cluster_keywords[cluster_id] = [kw[0] for kw in keywords]
+
+    return cluster_keywords
