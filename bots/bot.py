@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import discord
 from discord.ext import commands
 import os
@@ -5,7 +9,7 @@ import json
 from dotenv import load_dotenv
 
 load_dotenv(verbose=True)
-with open('data.json', 'r', encoding='utf8') as jfile:
+with open('./bots/data.json', 'r', encoding='utf8') as jfile:
     jdata = json.load(jfile)
 
 intents = discord.Intents.all()
@@ -14,7 +18,7 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.event
 async def on_ready():
-    for filename in os.listdir('./cogs'):
+    for filename in os.listdir('./bots/cogs'):
         if filename.endswith('.py'):
             await bot.load_extension(f'cogs.{filename[:-3]}')
     

@@ -14,7 +14,7 @@ class API:
         load_dotenv(verbose=True)
         self.API_KEY = os.getenv('API_KEY')     # 你的 API 金鑰
 
-    def get_comments(self, url: str, max_comments: int, pages: int, min_likes: int) -> list:
+    def get_comments(self, url: str, max_comments: int = 100, pages: int = 5, min_likes: int = 1) -> list:
         VIDEO_ID = self.extract_video_id(url) # 換成實際的影片 ID
         # 1. 建立帶逾時設定的 HTTP 物件
         http = httplib2.Http(timeout=10)  # 10 秒逾時

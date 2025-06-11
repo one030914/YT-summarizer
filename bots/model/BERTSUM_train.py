@@ -47,7 +47,7 @@ class BERTSentenceClassifier(nn.Module):
         logits = self.classifier(cls_output)
         return logits.squeeze(-1)
 
-def train(csv_path, model_save_path, pretrained_model='bert-base-chinese', epochs=10, batch_size=16):
+def train(csv_path, model_save_path, pretrained_model='bert-base-uncased', epochs=10, batch_size=16):
     df = pd.read_csv(csv_path).dropna(subset=["label", "清理後留言"])
     train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
 
@@ -132,6 +132,6 @@ def train(csv_path, model_save_path, pretrained_model='bert-base-chinese', epoch
 
 if __name__ == "__main__":
     train(
-        csv_path="./data/datasets/datasets/BERTSUM_chinese.csv",
-        model_save_path="./BERTSUM_chinese_finetuned"
+        csv_path="BERTSUM_english.csv",
+        model_save_path="./BERTSUM_english_finetuned"
     )
