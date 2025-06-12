@@ -2,7 +2,7 @@ import discord
 
 def build_summary_embed(video_title: str, analysis: dict) -> discord.Embed:
     embed = discord.Embed(
-        title="YT留言摘要機器人",
+        title="YT 留言摘要機器人",
         description=f"📽️ 影片標題：**{video_title}**",
         color=0x5865F2
     )
