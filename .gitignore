@@ -4,5 +4,6 @@ test*.py
 __pycache__/
 datasets/
 minilm*/
+MiniLM*.csv
 BERTSUM*/
 BERTSUM*.csv

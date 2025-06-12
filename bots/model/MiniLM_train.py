@@ -7,7 +7,7 @@ from sklearn.metrics import mean_squared_error
 from scipy.stats import spearmanr, pearsonr
 import matplotlib.pyplot as plt
 
-df = pd.read_csv("./data/datasets/datasets/MiniLM_english.csv")
+df = pd.read_csv("MiniLM_chinese.csv")
 train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
 train_examples = [
     InputExample(texts=[row['sentence1'], row['sentence2']], label=float(row['avg_score']))
@@ -23,10 +23,10 @@ model.fit(
     train_objectives=[(train_dataloader, train_loss)],
     epochs=10,
     warmup_steps=10,
-    output_path="./minilm_english_finetuned"
+    output_path="./minilm_chinese_finetuned"
 )
 
-model = SentenceTransformer("./minilm_english_finetuned", device=device)
+model = SentenceTransformer("./minilm_chinese_finetuned", device=device)
 preds, labels = [], []
 for _, row in test_df.iterrows():
     emb1 = model.encode(row['sentence1'], convert_to_tensor=True)
