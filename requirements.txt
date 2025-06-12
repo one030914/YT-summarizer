@@ -1,5 +1,5 @@
 # discord
-discord
+discord.py
 python-dotenv
 google-api-python-client
 # data
@@ -9,7 +9,17 @@ jieba
 beautifulsoup4
 opencc-python-reimplemented
 pandas
+contractions
 # model
+matplotlib
+datasets
+--index-url https://pypi.org/simple
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch
+torchvision
+torchaudio
+transformers[torch]
+sentence-transformers
 KeyBERT
 hdbscan
-SentenceTransformer
+tqdm
