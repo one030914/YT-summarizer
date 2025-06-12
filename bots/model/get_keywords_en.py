@@ -5,7 +5,7 @@ import hdbscan
 from sklearn.feature_extraction.text import CountVectorizer
 
 
-def cluster_and_extract_keywords(comments, top_n=5):
+def cluster_and_extract_keywords(comments: list[str], top_n: int=5):
     model = SentenceTransformer("bots/model/minilm_english_finetuned")
     kw_model = KeyBERT(model)
     if not comments:

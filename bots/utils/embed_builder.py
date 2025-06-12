@@ -22,7 +22,7 @@ def build_summary_embed(video_title: str, analysis: dict) -> discord.Embed:
     zh = lang.get("zh", 0.0)
     en = lang.get("en", 0.0)
     other = lang.get("other", 0.0)
-    lang_text = f"🌐 中文 {zh:.1f}%\n🗽 英文 {en:.1f}%\n🌐 其他語言 {other:.1f}%"
+    lang_text = f"🀄 中文 {zh:.1f}%\n🔤 英文 {en:.1f}%\n🌐 其他語言 {other:.1f}%"
     embed.add_field(name="🌍 語言佔比", value=lang_text, inline=False)
 
     return embed

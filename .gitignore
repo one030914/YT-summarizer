@@ -3,6 +3,6 @@ test*.py
 .env
 __pycache__/
 datasets/
-minilm*
+minilm*/
 BERTSUM*/
 BERTSUM*.csv

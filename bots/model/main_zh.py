@@ -1,4 +1,4 @@
-from model.get_keyword_zh import extract_short_keywords
+from bots.model.get_keywords_zh import extract_short_keywords
 import pandas as pd
 from collections import Counter
 # 讀取 CSV 文件
